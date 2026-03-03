@@ -49,13 +49,11 @@ async def create_thumb(msg, _id=""):
 async def download_image_thumb(url):
     """Download an image from a URL and save it as a JPEG thumbnail.
 
-    Validates that the URL points to an image via Content-Type header check
-    and enforces a 5MB size limit.
+    Validates that the URL points to an image via Content-Type header check.
     Returns the path to the saved thumbnail, or empty string on failure.
     """
     from httpx import AsyncClient
 
-    MAX_THUMB_SIZE = 5 * 1024 * 1024  # 5MB
     # Content types that are definitely NOT images
     NON_IMAGE_TYPES = (
         "text/", "application/json", "application/xml",
@@ -73,9 +71,7 @@ async def download_image_thumb(url):
                 ):
                     LOGGER.error(f"Thumb URL is not an image: {content_type}")
                     return ""
-                if content_length and int(content_length) > MAX_THUMB_SIZE:
-                    LOGGER.error(f"Thumb URL too large: {content_length} bytes")
-                    return ""
+
             except Exception:
                 pass  # HEAD failed, will check during GET
 
@@ -95,9 +91,6 @@ async def download_image_thumb(url):
                 return ""
 
             data = resp.content
-            if len(data) > MAX_THUMB_SIZE:
-                LOGGER.error(f"Thumb URL too large: {len(data)} bytes")
-                return ""
 
             # Save and convert to JPEG
             path = f"{DOWNLOAD_DIR}thumbnails"
